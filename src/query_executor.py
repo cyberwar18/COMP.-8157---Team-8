@@ -42,6 +42,9 @@ def _apply_index_mode(sql: str, index_mode: str) -> str:
     return sql.replace("GROUP BY", f"WHERE 1=1{predicate}\nGROUP BY", 1)
 
 
+# NOTE: cache-drop is only applied when configured (see drop_os_cache_between_trials
+# in config.yaml) to isolate its effect on latency measurements per the proposal's risk mitigation plan.
+
 def run_matrix(engine: str, schema_layer: str, cfg: dict, matrix: dict, out_path: pathlib.Path):
     exp_cfg = cfg["experiment"]
     is_new = not out_path.exists()
