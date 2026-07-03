@@ -1,0 +1,31 @@
+# Connection and experiment configuration.
+# Copy to config.local.yaml and adjust credentials; config.local.yaml is gitignored.
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  user: root
+  password: "replace me"
+  database: tpch
+  innodb_buffer_pool_size_gb: 8
+  disable_binlog: true
+
+duckdb:
+  database_path: "data/tpch.duckdb"   # ":memory:" also valid
+  memory_limit_gb: 16
+  threads: 12
+
+experiment:
+  scale_factors: [1, 5, 10]
+  aggregation_depths: ["single_group_by", "multi_group_by", "nested_subquery"]
+  index_modes: ["full_scan", "indexed_point_lookup", "range_scan"]
+  repetitions_per_config: 5
+  drop_os_cache_between_trials: true
+
+data:
+  tpch_dbgen_path: "external/tpch-dbgen"
+  raw_data_dir: "data/raw"
+
+results:
+  raw_metrics_csv: "results/raw_metrics.csv"
+  charts_dir: "results/charts"

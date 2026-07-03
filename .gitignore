@@ -1,0 +1,12 @@
+config/config.yaml
+data/
+*.duckdb
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+external/tpch-dbgen/*.o
+external/tpch-dbgen/dbgen
+external/tpch-dbgen/qgen
+results/

@@ -1,0 +1,76 @@
+# Graduated query matrix: dataset scale x aggregation depth x index utilization.
+# {schema} is substituted with "oltp" or "olap" table names by query_executor.py.
+# Each entry maps to one experimental configuration cell described in Proposal §V.
+
+single_group_by:
+  oltp: |
+    SELECT l_returnflag, l_linestatus, SUM(l_quantity) AS sum_qty,
+           SUM(l_extendedprice) AS sum_price, AVG(l_discount) AS avg_disc, COUNT(*) AS cnt
+    FROM lineitem
+    WHERE l_shipdate <= DATE '1998-09-01'
+    GROUP BY l_returnflag, l_linestatus;
+  olap: |
+    SELECT o_orderpriority, SUM(revenue) AS total_revenue, COUNT(*) AS cnt
+    FROM fact_lineitem_orders
+    WHERE l_shipdate <= DATE '1998-09-01'
+    GROUP BY o_orderpriority;
+
+multi_group_by:
+  oltp: |
+    SELECT s.s_name, n.n_name, YEAR(l.l_shipdate) AS ship_year, SUM(l.l_extendedprice * (1 - l.l_discount)) AS revenue
+    FROM lineitem l
+    JOIN supplier s ON l.l_suppkey = s.s_suppkey
+    JOIN nation n ON s.s_nationkey = n.n_nationkey
+    GROUP BY s.s_name, n.n_name, ship_year
+    ORDER BY revenue DESC
+    LIMIT 100;
+  olap: |
+    SELECT ds.s_name, ds.supplier_nation, EXTRACT(year FROM f.l_shipdate) AS ship_year,
+           SUM(f.revenue) AS revenue
+    FROM analytical_wide_view f
+    JOIN dim_supplier ds ON f.l_suppkey = ds.s_suppkey
+    GROUP BY ds.s_name, ds.supplier_nation, ship_year
+    ORDER BY revenue DESC
+    LIMIT 100;
+
+nested_subquery:
+  oltp: |
+    SELECT c_custkey, c_name, total_spent
+    FROM (
+        SELECT o.o_custkey AS c_custkey, SUM(l.l_extendedprice * (1 - l.l_discount)) AS total_spent
+        FROM orders o
+        JOIN lineitem l ON o.o_orderkey = l.l_orderkey
+        GROUP BY o.o_custkey
+    ) spend
+    JOIN customer c ON c.c_custkey = spend.c_custkey
+    WHERE total_spent > (
+        SELECT AVG(sub.total_spent) FROM (
+            SELECT o2.o_custkey, SUM(l2.l_extendedprice * (1 - l2.l_discount)) AS total_spent
+            FROM orders o2 JOIN lineitem l2 ON o2.o_orderkey = l2.l_orderkey
+            GROUP BY o2.o_custkey
+        ) sub
+    )
+    ORDER BY total_spent DESC
+    LIMIT 50;
+  olap: |
+    SELECT dc.c_custkey, dc.c_name, spend.total_spent
+    FROM (
+        SELECT c_custkey, SUM(revenue) AS total_spent
+        FROM fact_lineitem_orders
+        GROUP BY c_custkey
+    ) spend
+    JOIN dim_customer dc ON dc.c_custkey = spend.c_custkey
+    WHERE spend.total_spent > (
+        SELECT AVG(total_spent) FROM (
+            SELECT c_custkey, SUM(revenue) AS total_spent
+            FROM fact_lineitem_orders GROUP BY c_custkey
+        ) sub2
+    )
+    ORDER BY spend.total_spent DESC
+    LIMIT 50;
+
+# Index utilization variants applied on top of the above (index_modes in config.yaml):
+#   full_scan            -> run query as-is
+#   indexed_point_lookup -> add a WHERE on an indexed key (e.g. l_orderkey = :val)
+#   range_scan           -> add a BETWEEN filter on an indexed date/key column
+# query_executor.py appends the relevant predicate per index_mode at run time.

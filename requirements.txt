@@ -1,0 +1,6 @@
+mysql-connector-python
+duckdb
+pyyaml
+psutil
+pandas
+matplotlib
