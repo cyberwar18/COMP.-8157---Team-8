@@ -25,11 +25,11 @@ multi_group_by:
     ORDER BY revenue DESC
     LIMIT 100;
   olap: |
-    SELECT ds.s_name, ds.supplier_nation, EXTRACT(year FROM f.l_shipdate) AS ship_year,
+    SELECT ds.s_name, ds.nation_name, EXTRACT(year FROM f.l_shipdate) AS ship_year,
            SUM(f.revenue) AS revenue
     FROM analytical_wide_view f
     JOIN dim_supplier ds ON f.l_suppkey = ds.s_suppkey
-    GROUP BY ds.s_name, ds.supplier_nation, ship_year
+    GROUP BY ds.s_name, ds.nation_name, ship_year
     ORDER BY revenue DESC
     LIMIT 100;
 

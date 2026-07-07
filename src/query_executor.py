@@ -36,11 +36,21 @@ def _apply_index_mode(sql: str, index_mode: str) -> str:
     predicate = INDEX_MODE_PREDICATES[index_mode]
     if not predicate:
         return sql
-    # naive but effective for this harness's fixed query templates: inject
-    # before GROUP BY if a WHERE clause already exists, else add WHERE.
-    if re.search(r"\bWHERE\b", sql, re.IGNORECASE):
-        return sql.replace("GROUP BY", f"{predicate}\nGROUP BY", 1)
-    return sql.replace("GROUP BY", f"WHERE 1=1{predicate}\nGROUP BY", 1)
+    # Anchor on the FIRST GROUP BY, which always belongs to the block that
+    # actually scans the base fact/lineitem table in every query template
+    # in this matrix (even nested_subquery's outer WHERE references columns
+    # from the derived table, not the base table, so injecting there would
+    # produce an unresolvable column reference). Only look for an existing
+    # WHERE within that same block (before the first GROUP BY) - a WHERE
+    # appearing later, in an outer/sibling scope, doesn't apply here.
+    condition = predicate.strip()
+    gb_match = re.search(r"\bGROUP BY\b", sql, re.IGNORECASE)
+    if not gb_match:
+        return sql
+    prefix = sql[:gb_match.start()]
+    if re.search(r"\bWHERE\b", prefix, re.IGNORECASE):
+        return sql[:gb_match.start()] + f"{condition}\n" + sql[gb_match.start():]
+    return sql[:gb_match.start()] + f"WHERE 1=1 {condition}\n" + sql[gb_match.start():]
 
 
 # NOTE: cache-drop is only applied when configured (see drop_os_cache_between_trials
