@@ -35,7 +35,7 @@ multi_group_by:
 
 nested_subquery:
   oltp: |
-    SELECT c_custkey, c_name, total_spent
+    SELECT spend.c_custkey, c_name, total_spent
     FROM (
         SELECT o.o_custkey AS c_custkey, SUM(l.l_extendedprice * (1 - l.l_discount)) AS total_spent
         FROM orders o

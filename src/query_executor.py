@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import pathlib
+import re
 import statistics
 
 import yaml
@@ -37,7 +38,7 @@ def _apply_index_mode(sql: str, index_mode: str) -> str:
         return sql
     # naive but effective for this harness's fixed query templates: inject
     # before GROUP BY if a WHERE clause already exists, else add WHERE.
-    if " WHERE " in sql.upper():
+    if re.search(r"\bWHERE\b", sql, re.IGNORECASE):
         return sql.replace("GROUP BY", f"{predicate}\nGROUP BY", 1)
     return sql.replace("GROUP BY", f"WHERE 1=1{predicate}\nGROUP BY", 1)
 
