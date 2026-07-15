@@ -118,7 +118,7 @@ bash scripts/run_all.sh 1
 - [ ] Phase 4-5: query matrix execution
   - [x] DuckDB, SF-1, OLTP + OLAP: complete
   - [x] DuckDB, SF-5, OLTP + OLAP: complete
-  - [ ] DuckDB, SF-10, OLTP + OLAP: not started
+  - [x] DuckDB, SF-10, OLTP + OLAP: complete
   - [ ] MySQL, all scale factors: not started
 - [ ] Phase 6: crossover analysis + charts
 
