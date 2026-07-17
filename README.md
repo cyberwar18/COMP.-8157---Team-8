@@ -120,7 +120,8 @@ bash scripts/run_all.sh 1
   - [x] DuckDB, SF-5, OLTP + OLAP: complete
   - [x] DuckDB, SF-10, OLTP + OLAP: complete
   - [x] MySQL, SF-1, OLTP + OLAP: complete
-  - [ ] MySQL, SF-5, OLTP + OLAP: not started
+  - [x] MySQL, SF-5, OLTP: complete
+  - [ ] MySQL, SF-5, OLAP: not started
   - [ ] MySQL, SF-10, OLTP + OLAP: not started
 - [ ] Phase 6: crossover analysis + charts
 
