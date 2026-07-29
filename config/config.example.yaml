@@ -1,5 +1,5 @@
 # Connection and experiment configuration.
-# Copy to config.local.yaml and adjust credentials; config.local.yaml is gitignored.
+# Copy to config/config.yaml and adjust credentials; config/config.yaml is gitignored.
 
 mysql:
   host: 127.0.0.1

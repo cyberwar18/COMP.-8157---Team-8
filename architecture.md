@@ -131,7 +131,7 @@ separate server process.
 
 ## Layer 6: Measurement Collection + Analysis
 
-**Files:** `src/analysis.py`
+**Files:** `analysis.py`
 
 Reads `results/raw_metrics.csv`, computes median latency per configuration
 cell, and identifies crossover points — the scale factor at which the
