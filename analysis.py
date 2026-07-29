@@ -75,3 +75,31 @@ def plot_latency_vs_scale(aggregation_depth, index_mode, schema_layer="oltp"):
 
 for depth in ["single_group_by", "multi_group_by", "nested_subquery"]:
     plot_latency_vs_scale(depth, "full_scan")
+
+
+def compare_oltp_vs_olap(scale_factor=5):
+    for engine in ["duckdb", "mysql"]:
+        for depth in ["single_group_by", "multi_group_by", "nested_subquery"]:
+            oltp = summary[
+                (summary["engine"] == engine) &
+                (summary["schema_layer"] == "oltp") &
+                (summary["aggregation_depth"] == depth) &
+                (summary["index_mode"] == "full_scan") &
+                (summary["scale_factor"] == scale_factor)
+            ]["median_latency"]
+
+            olap = summary[
+                (summary["engine"] == engine) &
+                (summary["schema_layer"] == "olap") &
+                (summary["aggregation_depth"] == depth) &
+                (summary["index_mode"] == "full_scan") &
+                (summary["scale_factor"] == scale_factor)
+            ]["median_latency"]
+
+            if len(oltp) and len(olap):
+                speedup = oltp.values[0] / olap.values[0]
+                verdict = "OLAP faster" if speedup > 1 else "OLTP faster"
+                print(f"{engine:7} {depth:16} speedup={speedup:.2f}x  ({verdict})")
+
+
+compare_oltp_vs_olap()
