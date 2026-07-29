@@ -198,3 +198,35 @@ def plot_duckdb_memory(schema_layer="oltp", index_mode="full_scan"):
 
 
 plot_duckdb_memory()
+
+
+def plot_degradation(aggregation_depth="multi_group_by", index_mode="full_scan",
+                     schema_layer="oltp"):
+    subset = summary[
+        (summary["schema_layer"] == schema_layer) &
+        (summary["aggregation_depth"] == aggregation_depth) &
+        (summary["index_mode"] == index_mode)
+    ]
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    for engine in ["duckdb", "mysql"]:
+        engine_data = subset[subset["engine"] == engine].sort_values("scale_factor")
+        baseline = engine_data[engine_data["scale_factor"] == 1]["median_latency"].values[0]
+        normalized = engine_data["median_latency"] / baseline
+        ax.plot(engine_data["scale_factor"], normalized, marker="o", label=engine)
+
+    ax.set_yscale("log")
+    ax.set_xlabel("Scale factor")
+    ax.set_ylabel("Slowdown vs SF-1 (log scale)")
+    ax.set_title(f"Degradation rate — {aggregation_depth} / {index_mode} ({schema_layer})")
+    ax.set_xticks([1, 5, 10])
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    filename = f"results/chart_degradation_{aggregation_depth}_{index_mode}.png"
+    fig.savefig(filename, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {filename}")
+
+
+plot_degradation()
