@@ -35,7 +35,6 @@ src/
   data_populator.py         # Phase 2 — bulk-loads TPC-H .tbl files
   transformation_executor.py # Phase 3 — builds star schema + wide view
   query_executor.py         # Phase 4-5 — runs the query matrix, captures metrics
-  result_analyzer.py        # Phase 6 — crossover thresholds + charts
   utils/
     db_connectors.py        # shared MySQL/DuckDB connection wrappers
     metrics.py               # CPU/memory sampling during query trials
@@ -103,7 +102,7 @@ python -m src.query_executor --engine both --schema-layer both
 
 **Phase 6 — analysis:**
 ```bash
-python -m src.result_analyzer --input results/raw_metrics.csv
+python3 analysis.py
 ```
 
 **Or all phases at once, for a given scale factor:**
@@ -121,8 +120,7 @@ bash scripts/run_all.sh 1
   - [x] DuckDB, SF-10, OLTP + OLAP: complete
   - [x] MySQL, SF-1, OLTP + OLAP: complete
   - [x] MySQL, SF-5, OLTP + OLAP: complete
-  - [ ] MySQL, SF-10, OLTP + OLAP: not started
-- [ ] Phase 6: crossover analysis + charts
+- [x] Phase 6: crossover analysis + charts
 
 ## Notes for contributors
 

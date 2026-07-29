@@ -44,7 +44,7 @@ isolated to `src/utils/db_connectors.py` and the per-engine SQL files under
                            |
                            v
               +-------------------------+
-              |   result_analyzer.py    |   Phase 6
+              |   analysis.py    |   Phase 6
               +-------------------------+   -> crossover thresholds, charts
 ```
 
@@ -131,7 +131,7 @@ separate server process.
 
 ## Layer 6: Measurement Collection + Analysis
 
-**Files:** `src/result_analyzer.py`
+**Files:** `src/analysis.py`
 
 Reads `results/raw_metrics.csv`, computes median latency per configuration
 cell, and identifies crossover points — the scale factor at which the

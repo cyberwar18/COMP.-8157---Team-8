@@ -4,7 +4,7 @@ Owner: Purab Singh Mohan
 Builds the star schema (fact_lineitem_orders + dim_customer/dim_supplier/dim_part/
 dim_date) and the denormalized analytical_wide_view identically in both engines,
 using sql/<engine>/olap_schema.sql. Records transformation time and the storage
-footprint delta caused by the transform, which feeds result_analyzer.py.
+footprint delta caused by the transform, which feeds analysis.py.
 """
 from __future__ import annotations
 

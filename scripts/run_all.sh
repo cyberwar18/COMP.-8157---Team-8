@@ -21,6 +21,6 @@ echo "== 5/6 run query matrix (OLTP + OLAP layers) =="
 python -m src.query_executor --engine both --schema-layer both
 
 echo "== 6/6 analyze results =="
-python -m src.result_analyzer --input results/raw_metrics.csv
+python3 analysis.py
 
 echo "Done. See results/median_latency_by_config.csv, results/crossover_thresholds.csv, results/charts/"
