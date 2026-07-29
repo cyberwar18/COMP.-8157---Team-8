@@ -133,3 +133,35 @@ def plot_index_modes(engine="duckdb", aggregation_depth="multi_group_by",
 
 
 plot_index_modes()
+
+
+def plot_small_multiples(schema_layer="oltp", index_mode="full_scan"):
+    shapes = ["single_group_by", "multi_group_by", "nested_subquery"]
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+
+    for ax, depth in zip(axes, shapes):
+        subset = summary[
+            (summary["schema_layer"] == schema_layer) &
+            (summary["aggregation_depth"] == depth) &
+            (summary["index_mode"] == index_mode)
+        ]
+        for engine in ["duckdb", "mysql"]:
+            engine_data = subset[subset["engine"] == engine].sort_values("scale_factor")
+            ax.plot(engine_data["scale_factor"], engine_data["median_latency"],
+                    marker="o", label=engine)
+        ax.set_yscale("log")
+        ax.set_xlabel("Scale factor")
+        ax.set_title(depth)
+        ax.grid(True, alpha=0.3)
+        ax.set_xticks([1, 5, 10])
+
+    axes[0].set_ylabel("Median latency (seconds, log scale)")
+    axes[0].legend()
+
+    filename = f"results/chart_smallmultiples_{schema_layer}_{index_mode}.png"
+    fig.savefig(filename, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {filename}")
+
+
+plot_small_multiples()
