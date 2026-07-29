@@ -115,7 +115,7 @@ bash scripts/run_all.sh 1
 
 - [x] Phase 1-2: OLTP schema + TPC-H SF-1 data loaded (MySQL + DuckDB)
 - [x] Phase 3: OLTP-to-OLAP transformation complete (MySQL + DuckDB)
-- [ ] Phase 4-5: query matrix execution
+- [x] Phase 4-5: query matrix execution
   - [x] DuckDB, SF-1, OLTP + OLAP: complete
   - [x] DuckDB, SF-5, OLTP + OLAP: complete
   - [x] DuckDB, SF-10, OLTP + OLAP: complete
