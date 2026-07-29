@@ -1,0 +1,77 @@
+import pandas as pd
+
+df = pd.read_csv("results/raw_metrics.csv")
+
+print(df.shape)
+print(df.head())
+print(df["engine"].unique())
+print(df["scale_factor"].unique())
+
+
+summary = df.groupby(
+    ["engine", "schema_layer", "scale_factor", "aggregation_depth", "index_mode"]
+)["latency_seconds"].median().reset_index()
+
+summary = summary.rename(columns={"latency_seconds": "median_latency"})
+
+print(summary.head(10))
+print("Total configuration cells:", len(summary))
+
+summary.to_csv("results/median_latency_summary.csv", index=False)
+print("Saved summary to results/median_latency_summary.csv")
+
+import matplotlib.pyplot as plt
+
+# Filter down to just the one query shape/mode we want to plot,
+# and just the OLTP layer
+subset = summary[
+    (summary["schema_layer"] == "oltp") &
+    (summary["aggregation_depth"] == "multi_group_by") &
+    (summary["index_mode"] == "full_scan")
+]
+
+print(subset)
+
+fig, ax = plt.subplots(figsize=(7, 5))
+
+for engine in ["duckdb", "mysql"]:
+    engine_data = subset[subset["engine"] == engine].sort_values("scale_factor")
+    ax.plot(engine_data["scale_factor"], engine_data["median_latency"], marker="o", label=engine)
+
+ax.set_yscale("log")
+ax.set_xlabel("Scale factor")
+ax.set_ylabel("Median latency (seconds, log scale)")
+ax.set_title("multi_group_by / full_scan — MySQL vs DuckDB")
+ax.legend()
+ax.grid(True, alpha=0.3)
+
+fig.savefig("results/chart_multi_group_by_full_scan.png", bbox_inches="tight")
+print("Saved chart to results/chart_multi_group_by_full_scan.png")
+
+def plot_latency_vs_scale(aggregation_depth, index_mode, schema_layer="oltp"):
+    subset = summary[
+        (summary["schema_layer"] == schema_layer) &
+        (summary["aggregation_depth"] == aggregation_depth) &
+        (summary["index_mode"] == index_mode)
+    ]
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    for engine in ["duckdb", "mysql"]:
+        engine_data = subset[subset["engine"] == engine].sort_values("scale_factor")
+        ax.plot(engine_data["scale_factor"], engine_data["median_latency"], marker="o", label=engine)
+
+    ax.set_yscale("log")
+    ax.set_xlabel("Scale factor")
+    ax.set_ylabel("Median latency (seconds, log scale)")
+    ax.set_title(f"{aggregation_depth} / {index_mode} ({schema_layer})")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    filename = f"results/chart_{schema_layer}_{aggregation_depth}_{index_mode}.png"
+    fig.savefig(filename, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {filename}")
+
+
+for depth in ["single_group_by", "multi_group_by", "nested_subquery"]:
+    plot_latency_vs_scale(depth, "full_scan")
