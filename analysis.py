@@ -165,3 +165,36 @@ def plot_small_multiples(schema_layer="oltp", index_mode="full_scan"):
 
 
 plot_small_multiples()
+
+
+mem_summary = df.groupby(
+    ["engine", "schema_layer", "scale_factor", "aggregation_depth", "index_mode"]
+)["peak_rss_mb"].median().reset_index()
+
+def plot_duckdb_memory(schema_layer="oltp", index_mode="full_scan"):
+    subset = mem_summary[
+        (mem_summary["engine"] == "duckdb") &
+        (mem_summary["schema_layer"] == schema_layer) &
+        (mem_summary["index_mode"] == index_mode)
+    ]
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    for depth in ["single_group_by", "multi_group_by", "nested_subquery"]:
+        depth_data = subset[subset["aggregation_depth"] == depth].sort_values("scale_factor")
+        ax.plot(depth_data["scale_factor"], depth_data["peak_rss_mb"],
+                marker="o", label=depth)
+
+    ax.set_xlabel("Scale factor")
+    ax.set_ylabel("Peak RSS (MB)")
+    ax.set_title(f"DuckDB in-process peak memory ({schema_layer})")
+    ax.set_xticks([1, 5, 10])
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    filename = f"results/chart_memory_duckdb_{schema_layer}_{index_mode}.png"
+    fig.savefig(filename, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {filename}")
+
+
+plot_duckdb_memory()
