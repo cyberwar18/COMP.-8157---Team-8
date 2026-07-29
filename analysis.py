@@ -102,4 +102,34 @@ def compare_oltp_vs_olap(scale_factor=5):
                 print(f"{engine:7} {depth:16} speedup={speedup:.2f}x  ({verdict})")
 
 
+
 compare_oltp_vs_olap()
+
+
+def plot_index_modes(engine="duckdb", aggregation_depth="multi_group_by",
+                     scale_factor=5, schema_layer="oltp"):
+    subset = summary[
+        (summary["engine"] == engine) &
+        (summary["schema_layer"] == schema_layer) &
+        (summary["aggregation_depth"] == aggregation_depth) &
+        (summary["scale_factor"] == scale_factor)
+    ].sort_values("median_latency")
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.bar(subset["index_mode"], subset["median_latency"])
+    ax.set_yscale("log")
+    ax.set_ylabel("Median latency (seconds, log scale)")
+    ax.set_title(f"Index mode impact — {engine} / {aggregation_depth} (SF-{scale_factor})")
+    ax.grid(True, axis="y", alpha=0.3)
+
+
+    for i, val in enumerate(subset["median_latency"]):
+        ax.text(i, val, f"{val:.4f}s", ha="center", va="bottom", fontsize=9)
+
+    filename = f"results/chart_indexmode_{engine}_{aggregation_depth}_sf{scale_factor}.png"
+    fig.savefig(filename, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {filename}")
+
+
+plot_index_modes()
