@@ -9,3 +9,4 @@ venv/
 external/tpch-dbgen/*.o
 external/tpch-dbgen/dbgen
 external/tpch-dbgen/qgen
+.DS_Store
