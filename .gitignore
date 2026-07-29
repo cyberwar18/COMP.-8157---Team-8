@@ -1,5 +1,5 @@
 config/config.yaml
-data/
+data/raw/
 *.duckdb
 __pycache__/
 *.pyc
