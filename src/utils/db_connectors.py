@@ -134,10 +134,17 @@ class DuckDBConnector:
         """)
 
     def storage_bytes(self, table: str) -> int:
-        # Approximate via DuckDB's database_size pragma; per-table sizing needs
-        # 'PRAGMA storage_info(table)' summed over segments.
+        # duckdb_tables() is DuckDB's stable catalog view (the equivalent of
+        # MySQL's information_schema.tables) and 'estimated_size' is a
+        # documented, stable column. The previous implementation summed
+        # 'segment_size' from pragma_storage_info(), which depends on
+        # internal storage-segment layout and silently threw on every call
+        # on this DuckDB version -- the exception was caught upstream in
+        # transformation_executor.py's _total_storage_bytes(), so every
+        # lookup failed quietly and the running total stayed at 0.
         rows = self._conn.execute(
-            f"SELECT SUM(segment_size) FROM pragma_storage_info('{table}')"
+            "SELECT estimated_size FROM duckdb_tables() WHERE table_name = ?",
+            [table],
         ).fetchall()
         return int(rows[0][0]) if rows and rows[0][0] is not None else 0
 
